@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUJAM TECH · Calculadora</title>
+  <style>
+    :root {
+      --navy: #1B3A6B;
+      --navy-dark: #132A4E;
+      --orange: #F5821F;
+      --orange-dark: #D96F12;
+      --bg: #F4F7FB;
+      --key: #FFFFFF;
+      --key-text: #1B3A6B;
+      --screen: #132A4E;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+      padding: 32px 16px;
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at 50% 0%, #ffffff 0%, var(--bg) 70%);
+      color: var(--navy);
+    }
+
+    /* ---------- Brand header ---------- */
+    .brand {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-align: center;
+    }
+
+    .brand__logo {
+      width: 92px;
+      height: 92px;
+      object-fit: contain;
+      background: #fff;
+      border-radius: 20px;
+      padding: 8px;
+      box-shadow: 0 8px 22px rgba(27, 58, 107, 0.18);
+    }
+
+    .brand__name {
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: 3px;
+    }
+
+    .brand__name span { color: var(--orange); }
+
+    .brand__tagline {
+      font-size: 0.72rem;
+      letter-spacing: 1.6px;
+      text-transform: uppercase;
+      color: var(--orange);
+      font-weight: 600;
+    }
+
+    /* ---------- Calculator ---------- */
+    .calc {
+      width: 100%;
+      max-width: 340px;
+      background: var(--navy);
+      border-radius: 26px;
+      padding: 20px;
+      box-shadow: 0 18px 46px rgba(19, 42, 78, 0.35);
+    }
+
+    .screen {
+      background: var(--screen);
+      border-radius: 16px;
+      padding: 18px 20px;
+      margin-bottom: 18px;
+      text-align: right;
+      overflow: hidden;
+    }
+
+    .screen__history {
+      min-height: 20px;
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.5);
+      letter-spacing: 0.5px;
+      word-wrap: break-word;
+    }
+
+    .screen__result {
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      word-wrap: break-word;
+      transition: color 0.15s ease;
+    }
+
+    .screen__result.is-error { color: #ff9a7a; font-size: 1.6rem; }
+
+    .keys {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--key-text);
+      background: var(--key);
+      border: none;
+      border-radius: 14px;
+      padding: 16px 0;
+      cursor: pointer;
+      transition: transform 0.08s ease, background 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.12);
+      user-select: none;
+    }
+
+    button:hover { background: #eef3fb; }
+
+    button:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+    }
+
+    .key--func {
+      color: var(--navy);
+      background: #dbe6f5;
+    }
+    .key--func:hover { background: #cbd9ee; }
+
+    .key--op {
+      color: #fff;
+      background: var(--orange);
+    }
+    .key--op:hover { background: var(--orange-dark); }
+
+    .key--equal {
+      color: #fff;
+      background: var(--orange);
+      grid-column: span 2;
+    }
+    .key--equal:hover { background: var(--orange-dark); }
+
+    .key--wide { grid-column: span 2; }
+
+    /* ---------- Footer ---------- */
+    .footer {
+      font-size: 0.72rem;
+      color: rgba(27, 58, 107, 0.55);
+      text-align: center;
+    }
+
+    @media (max-width: 380px) {
+      .brand__name { font-size: 1.4rem; }
+      .screen__result { font-size: 2.2rem; }
+      button { font-size: 1.15rem; padding: 14px 0; }
+    }
+  </style>
+</head>
+<body>
+  <header class="brand">
+    <img class="brand__logo" src="Lujam.jpeg" alt="Logo LUJAM TECH" />
+    <h1 class="brand__name">LUJAM <span>TECH</span></h1>
+    <p class="brand__tagline">Calculando tu éxito digital</p>
+  </header>
+
+  <main class="calc" role="application" aria-label="Calculadora LUJAM TECH">
+    <div class="screen">
+      <div class="screen__history" id="history"></div>
+      <div class="screen__result" id="result" aria-live="polite">0</div>
+    </div>
+
+    <div class="keys">
+      <button class="key--func" data-action="clear">AC</button>
+      <button class="key--func" data-action="sign">±</button>
+      <button class="key--func" data-action="percent">%</button>
+      <button class="key--op" data-op="/">÷</button>
+
+      <button data-num="7">7</button>
+      <button data-num="8">8</button>
+      <button data-num="9">9</button>
+      <button class="key--op" data-op="*">×</button>
+
+      <button data-num="4">4</button>
+      <button data-num="5">5</button>
+      <button data-num="6">6</button>
+      <button class="key--op" data-op="-">−</button>
+
+      <button data-num="1">1</button>
+      <button data-num="2">2</button>
+      <button data-num="3">3</button>
+      <button class="key--op" data-op="+">+</button>
+
+      <button class="key--wide" data-num="0">0</button>
+      <button data-action="decimal">,</button>
+      <button class="key--equal" data-action="equals">=</button>
+    </div>
+  </main>
+
+  <footer class="footer">© <span id="year"></span> LUJAM TECH</footer>
+
+  <script>
+    (function () {
+      const resultEl = document.getElementById("result");
+      const historyEl = document.getElementById("history");
+
+      let current = "0";
+      let previous = null;
+      let operator = null;
+      let justEvaluated = false;
+
+      const OPS = {
+        "+": (a, b) => a + b,
+        "-": (a, b) => a - b,
+        "*": (a, b) => a * b,
+        "/": (a, b) => (b === 0 ? null : a / b),
+      };
+      const SYMBOL = { "+": "+", "-": "−", "*": "×", "/": "÷" };
+
+      function format(n) {
+        if (!isFinite(n)) return "Error";
+        // trim floating point noise
+        const rounded = Math.round((n + Number.EPSILON) * 1e10) / 1e10;
+        return String(rounded).replace(".", ",");
+      }
+
+      function parseDisplay(value) {
+        return parseFloat(value.replace(",", "."));
+      }
+
+      function render() {
+        resultEl.textContent = current;
+        resultEl.classList.toggle("is-error", current === "Error");
+        historyEl.textContent =
+          previous !== null && operator
+            ? format(previous) + " " + SYMBOL[operator]
+            : "";
+      }
+
+      function inputNumber(digit) {
+        if (current === "Error") current = "0";
+        if (justEvaluated) {
+          current = "0";
+          justEvaluated = false;
+        }
+        if (digit === "0" && current === "0") return;
+        current = current === "0" ? digit : current + digit;
+        render();
+      }
+
+      function inputDecimal() {
+        if (current === "Error") current = "0";
+        if (justEvaluated) {
+          current = "0";
+          justEvaluated = false;
+        }
+        if (!current.includes(",")) current += ",";
+        render();
+      }
+
+      function chooseOperator(op) {
+        if (current === "Error") return;
+        if (operator && previous !== null && !justEvaluated) {
+          compute();
+        } else {
+          previous = parseDisplay(current);
+        }
+        operator = op;
+        justEvaluated = false;
+        current = "0";
+        render();
+      }
+
+      function compute() {
+        if (operator === null || previous === null) return;
+        const b = parseDisplay(current);
+        const out = OPS[operator](previous, b);
+        if (out === null) {
+          current = "Error";
+          previous = null;
+          operator = null;
+          justEvaluated = false;
+          render();
+          return;
+        }
+        previous = out;
+        current = format(out);
+        operator = null;
+        justEvaluated = true;
+        render();
+      }
+
+      function equals() {
+        if (operator === null || previous === null) return;
+        const b = parseDisplay(current);
+        const a = previous;
+        const op = operator;
+        const out = OPS[op](a, b);
+        if (out === null) {
+          current = "Error";
+          previous = null;
+          operator = null;
+          justEvaluated = false;
+          render();
+          return;
+        }
+        historyEl.textContent = format(a) + " " + SYMBOL[op] + " " + format(b) + " =";
+        previous = null;
+        operator = null;
+        current = format(out);
+        justEvaluated = true;
+        resultEl.textContent = current;
+        resultEl.classList.remove("is-error");
+      }
+
+      function clearAll() {
+        current = "0";
+        previous = null;
+        operator = null;
+        justEvaluated = false;
+        render();
+      }
+
+      function toggleSign() {
+        if (current === "Error" || current === "0") return;
+        current = current.startsWith("-") ? current.slice(1) : "-" + current;
+        render();
+      }
+
+      function percent() {
+        if (current === "Error") return;
+        const out = parseDisplay(current) / 100;
+        current = format(out);
+        render();
+      }
+
+      document.querySelector(".keys").addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        if (btn.dataset.num !== undefined) return inputNumber(btn.dataset.num);
+        if (btn.dataset.op) return chooseOperator(btn.dataset.op);
+        switch (btn.dataset.action) {
+          case "clear": return clearAll();
+          case "sign": return toggleSign();
+          case "percent": return percent();
+          case "decimal": return inputDecimal();
+          case "equals": return equals();
+        }
+      });
+
+      document.addEventListener("keydown", (e) => {
+        const k = e.key;
+        if (/^[0-9]$/.test(k)) inputNumber(k);
+        else if (k === "," || k === ".") inputDecimal();
+        else if (["+", "-", "*", "/"].includes(k)) chooseOperator(k);
+        else if (k === "Enter" || k === "=") equals();
+        else if (k === "Backspace") {
+          if (current !== "Error" && !justEvaluated) {
+            current = current.length > 1 ? current.slice(0, -1) : "0";
+            render();
+          }
+        } else if (k === "Escape") clearAll();
+        else return;
+        e.preventDefault();
+      });
+
+      document.getElementById("year").textContent = new Date().getFullYear();
+      render();
+    })();
+  </script>
+</body>
+</html>
